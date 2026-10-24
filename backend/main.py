@@ -1,4 +1,3 @@
-
 import os
 from datetime import datetime, timezone
 
@@ -9,14 +8,19 @@ from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI(title="Q7 - API Dashboard")
 
 
+# CORS configuration for local and deployed frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[
+        "http://localhost:5173",
+        "https://q7-react-frontend.onrender.com",
+    ],
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
+# PostgreSQL database connection
 def get_connection():
     return psycopg.connect(
         host=os.getenv("DB_HOST", "localhost"),
@@ -27,23 +31,30 @@ def get_connection():
     )
 
 
+# Create the health-check history table
 @app.on_event("startup")
 def create_tables():
     with get_connection() as conn:
-        conn.execute("""
+        conn.execute(
+            """
             CREATE TABLE IF NOT EXISTS health_checks (
                 id SERIAL PRIMARY KEY,
                 status VARCHAR(30) NOT NULL,
                 checked_at TIMESTAMPTZ NOT NULL
             )
-        """)
+            """
+        )
 
 
+# Root endpoint
 @app.get("/")
 def home():
-    return {"message": "Q7 API Dashboard backend is running"}
+    return {
+        "message": "Q7 API Dashboard backend is running"
+    }
 
 
+# Health-check endpoint
 @app.get("/api/health")
 def health():
     try:
@@ -56,7 +67,10 @@ def health():
                 ("healthy", datetime.now(timezone.utc)),
             )
 
-        return {"status": "healthy", "database": "connected"}
+        return {
+            "status": "healthy",
+            "database": "connected",
+        }
 
     except psycopg.Error as exc:
         raise HTTPException(
@@ -65,6 +79,7 @@ def health():
         ) from exc
 
 
+# Retrieve the latest 20 health checks
 @app.get("/api/history")
 def history():
     try:
