@@ -1,6 +1,7 @@
-
 import { useCallback, useEffect, useRef, useState } from "react";
 import "./App.css";
+
+const API_BASE_URL = "https://q7-fastapi-backend.onrender.com";
 
 function App() {
   const [health, setHealth] = useState("Checking...");
@@ -23,7 +24,7 @@ function App() {
     setLoadingHistory(true);
 
     try {
-      const response = await fetch("/api/history", {
+      const response = await fetch(`${API_BASE_URL}/api/history`, {
         cache: "no-store",
       });
 
@@ -61,7 +62,7 @@ function App() {
     setMessage("Connecting to FastAPI...");
 
     try {
-      const response = await fetch("/api/health", {
+      const response = await fetch(`${API_BASE_URL}/api/health`, {
         cache: "no-store",
       });
 
@@ -87,14 +88,12 @@ function App() {
       setMessage(
         error instanceof Error
           ? `Could not reach the API: ${error.message}`
-          : "Could not reach the API. Check the backend and proxy."
+          : "Could not reach the API. Check the backend and CORS settings."
       );
     } finally {
       setLastChecked(new Date().toLocaleTimeString());
       checkingRef.current = false;
       setChecking(false);
-
-      // Load history even if the health check fails.
       loadHistory();
     }
   }, [loadHistory]);
@@ -167,10 +166,7 @@ function App() {
           <div className="history-heading">
             <h3>Health Check History</h3>
 
-            <button
-              onClick={loadHistory}
-              disabled={loadingHistory}
-            >
+            <button onClick={loadHistory} disabled={loadingHistory}>
               {loadingHistory ? "Refreshing..." : "Refresh History"}
             </button>
           </div>
