@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import "./App.css";
 
-const API_BASE_URL = "https://q7-fastapi-backend.onrender.com";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
 function App() {
   const [health, setHealth] = useState("Checking...");
